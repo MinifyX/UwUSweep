@@ -229,17 +229,12 @@ pub fn check_payload(dir: &Path) -> Result<String, String> {
     }
     std::fs::create_dir_all(dir).map_err(|e| format!("Couldn't create {}: {e}", dir.display()))?;
     extract_all(dir, "", &mut |_, _| {})?;
-    let mut report = Vec::new();
-    for (name, magic) in [(APP_EXE, &b"MZ"[..])] {
-        let path = dir.join(name);
-        let bytes =
-            std::fs::read(&path).map_err(|e| format!("{} is missing: {e}", path.display()))?;
-        if !bytes.starts_with(magic) {
-            return Err(format!("{} isn't what it should be.", path.display()));
-        }
-        report.push(format!("ok  {} ({} bytes)", path.display(), bytes.len()));
+    let path = dir.join(APP_EXE);
+    let bytes = std::fs::read(&path).map_err(|e| format!("{} is missing: {e}", path.display()))?;
+    if !bytes.starts_with(b"MZ") {
+        return Err(format!("{} isn't what it should be.", path.display()));
     }
-    Ok(report.join("\n"))
+    Ok(format!("ok  {} ({} bytes)", path.display(), bytes.len()))
 }
 
 fn quoted(path: &Path) -> String {

@@ -657,16 +657,13 @@ mod tests {
             stored: "files/0".into(),
             size: None,
         };
-        let home = Path::new("/home/someone");
-        assert!(own_place(
-            &item(ItemKind::File, "/home/someone/.app"),
-            Some(home)
-        ));
-        assert!(!own_place(&item(ItemKind::File, "/etc/app"), Some(home)));
-        assert!(!own_place(
-            &item(ItemKind::File, "/home/someone/.app"),
-            None
-        ));
+        // A real folder: `/home` itself is a link on macOS.
+        let dir = tempfile::tempdir().unwrap();
+        let home = real_path(dir.path()).unwrap();
+        let inside = home.join(".app").to_string_lossy().into_owned();
+        assert!(own_place(&item(ItemKind::File, &inside), Some(&home)));
+        assert!(!own_place(&item(ItemKind::File, "/etc/app"), Some(&home)));
+        assert!(!own_place(&item(ItemKind::File, &inside), None));
         assert!(own_place(
             &item(ItemKind::RegKey, r"HKCU\Software\App"),
             None
