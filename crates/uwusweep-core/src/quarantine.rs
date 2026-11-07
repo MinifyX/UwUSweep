@@ -346,9 +346,11 @@ fn restore_one(dir: &Path, item: &QuarantineItem) -> Result<()> {
     move_path(&src, dest)
 }
 
-/// [`is_protected`] for the path as written and as it really is.
-fn protected(path: &Path) -> bool {
-    is_protected(path) || real_path(path).is_none_or(|r| is_protected(&r))
+/// [`is_protected`] for the path as it really is. Judging the real path
+/// alone matters on Windows: `%TEMP%` and old install paths often carry
+/// short names (`RUNNER~1`) that only resolve to the long spelling here.
+pub fn protected(path: &Path) -> bool {
+    !path.is_absolute() || real_path(path).is_none_or(|r| is_protected(&r))
 }
 
 /// `path` with links in its parent folders resolved, so a symlink or

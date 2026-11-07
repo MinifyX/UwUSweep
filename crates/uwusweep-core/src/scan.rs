@@ -124,11 +124,7 @@ pub fn find_leftovers(app: &App, level: ScanLevel, traces: &[Trace]) -> Vec<Left
 /// items inside a folder or key that is itself listed with at least the same
 /// confidence.
 fn tidy(mut found: Vec<Leftover>) -> Vec<Leftover> {
-    found.retain(|l| match l.kind {
-        ItemKind::File | ItemKind::Dir => !is_protected(Path::new(&l.path)),
-        ItemKind::RegKey => !is_protected_key(&l.path),
-        ItemKind::RegValue => true,
-    });
+    found.retain(|l| !is_protected_item(l));
     found.sort_by(|a, b| (&a.path, &a.value, a.confidence).cmp(&(&b.path, &b.value, b.confidence)));
     found.dedup_by(|b, a| a.path == b.path && a.value == b.value);
     let parents: Vec<(String, Confidence, ItemKind)> = found
@@ -296,6 +292,16 @@ const PROTECTED_IN_HOME: &[&str] = &[
     "appdata/roaming/microsoft",
     "appdata/roaming/microsoft/windows/**",
 ];
+
+/// A leftover that must never be moved: a protected path (as it really is)
+/// or registry key.
+pub fn is_protected_item(l: &Leftover) -> bool {
+    match l.kind {
+        ItemKind::File | ItemKind::Dir => crate::quarantine::protected(Path::new(&l.path)),
+        ItemKind::RegKey => is_protected_key(&l.path),
+        ItemKind::RegValue => false,
+    }
+}
 
 /// System folders, home folders and their standard subfolders, the roots
 /// themselves, and anything that is not a plain absolute path.

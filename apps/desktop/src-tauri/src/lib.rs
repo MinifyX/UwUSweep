@@ -264,7 +264,7 @@ async fn quarantine_put(
             let scanned = state.scanned.lock();
             for item in &items {
                 match scanned.iter().find(|known| same_item(known, item)) {
-                    Some(known) if scan::is_protected(Path::new(&known.path)) => {
+                    Some(known) if scan::is_protected_item(known) => {
                         failed.push((known.path.clone(), "protected".into()))
                     }
                     // Elevated, everything goes to the admins' quarantine:
