@@ -161,9 +161,19 @@ if (process.platform === 'win32') {
   // the template in tauri.conf.json, and the AUR package repacks this .deb
   // under the same name.
   console.log(`\n▸ Packaging UwUSweep ${version} as .deb and .rpm`);
-  run(
-    `pnpm --filter @uwusweep/desktop tauri build --bundles deb,rpm${targetArg} --config "${configFile('packages', { productName: 'uwusweep' })}"`,
-  );
+  const packages = (bundles, config = {}) =>
+    run(
+      `pnpm --filter @uwusweep/desktop tauri build --bundles ${bundles}${targetArg} --config "${configFile('packages', { productName: 'uwusweep', ...config })}"`,
+    );
+  // rpm allows no '-' in a version: a prerelease becomes release 0.<pre>,
+  // which sorts before the final release 1.
+  const [core, pre] = version.split(/-(.*)/);
+  if (pre) {
+    packages('deb');
+    packages('rpm', { version: core, bundle: { linux: { rpm: { release: `0.${pre}` } } } });
+  } else {
+    packages('deb,rpm');
+  }
   const deb = join(out, `UwUSweep-linux-${arch()}.deb`);
   copyFileSync(
     only(join(bundles, 'deb'), (name) => name.endsWith('.deb'), 'deb'),
