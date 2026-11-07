@@ -1,0 +1,17 @@
+{
+  "Registry: nur für dich": "Registry: just for you",
+  "Registry: für alle": "Registry: for everyone",
+  "Autostart-Ordner: nur für dich": "Startup folder: just for you",
+  "Autostart-Ordner: für alle": "Startup folder: for everyone",
+  "Launch Agents: nur für dich": "Launch Agents: just for you",
+  "Launch Agents: für alle": "Launch Agents: for everyone",
+  "Launch Daemons": "Launch Daemons",
+  "Autostart der Arbeitsumgebung": "Desktop session autostart",
+  "systemd (Benutzer)": "systemd (user)",
+  "{name} startet wieder mit.": "{name} starts with your computer again.",
+  "{name} startet nicht mehr mit.": "{name} no longer starts with your computer.",
+  "Was beim Anmelden von selbst startet. Aus heißt nur: startet nicht mehr mit.": "What starts by itself when you sign in. Off only means: it doesn’t start along anymore.",
+  "Nichts im Autostart": "Nothing in startup",
+  "Dein Computer startet ganz ohne Mitläufer. Schön ruhig.": "Your computer starts without any tag-alongs. Nice and calm.",
+  "{name} beim Anmelden starten": "Start {name} at sign-in"
+}

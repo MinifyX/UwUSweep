@@ -1,0 +1,50 @@
+/*
+ * The suite first (Tailwind for the package's components, then
+ * @uwusuite/design: tokens, UwU Sans, base layer, motion, Nyu, title bar),
+ * then the few rules of the app's own frame. Everything else is Tailwind
+ * classes on the components.
+ */
+@import 'tailwindcss';
+@import '@uwusuite/design/tailwind.css';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+.sweep-frame {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+
+.sweep-body {
+  display: grid;
+  grid-template-columns: 13.5rem 1fr;
+  min-height: 0;
+}
+
+.sweep-main {
+  min-width: 0;
+  overflow: auto;
+}
+
+@media (max-width: 720px) {
+  .sweep-body {
+    grid-template-columns: 4rem 1fr;
+  }
+  .sweep-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}

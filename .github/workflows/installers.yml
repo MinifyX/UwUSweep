@@ -1,0 +1,415 @@
+name: Installers
+
+# Every download of a release, built and checked here — all of them: the
+# Windows setups for x64 and ARM, the universal macOS disk image, and .deb,
+# .rpm and portable folder for Linux x64 and arm64. Nothing is signed (there
+# is no certificate, and UwUSweep 0.1 has no updater with a key of its own),
+# so no job here holds a secret. A tag ends with a *draft* release carrying
+# everything plus SHA256SUMS.txt; publishing it is done by hand, after a look.
+#
+#   version ── check ×3 ── installers ×5 ── release (tags only)
+
+on:
+  push:
+    tags: ['v*']
+    # A branch to try the builds on before a release is tagged.
+    branches: ['ci/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+  CARGO_TERM_COLOR: always
+  # Tauri runs linuxdeploy, itself an AppImage; runners have no FUSE for it.
+  APPIMAGE_EXTRACT_AND_RUN: '1'
+
+jobs:
+  version:
+    name: Version and notes
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      # Every `uses:` is pinned to a commit, with the version in the comment: a
+      # tag can be moved, and `@stable` is a branch.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      # Before anything is compiled: an installer that reports a different
+      # version than the tag it came from is a support problem forever, and
+      # missing release notes would only be noticed after the builds.
+      - name: Check the version and the release notes
+        id: check
+        env:
+          # Through the environment rather than ${{ }} inside the script: a tag
+          # name is arbitrary text and has no business being pasted into source.
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          node --input-type=module <<'EOF'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          import { readNotes } from './scripts/release-body.mjs';
+
+          const fail = (message) => {
+            console.log(`::error::${message}`);
+            process.exit(1);
+          };
+          const tagged = process.env.REF.startsWith('refs/tags/v');
+
+          // Both apps: the setup is what says the version out loud, in its
+          // window and in "Installed apps". `pnpm build:setup` refuses to
+          // build them apart; this is the same check at minute zero.
+          const versions = {};
+          for (const app of ['desktop', 'setup']) {
+            const file = `apps/${app}/src-tauri/tauri.conf.json`;
+            versions[app] = JSON.parse(readFileSync(file, 'utf8')).version;
+          }
+          if (versions.desktop !== versions.setup) {
+            fail(`The app says ${versions.desktop}, the setup ${versions.setup}.`);
+          }
+          const version = tagged ? process.env.REF_NAME.replace(/^v/, '') : versions.desktop;
+          if (version !== versions.desktop) {
+            fail(`Tag ${process.env.REF_NAME} means version ${version}, but tauri.conf.json says ${versions.desktop}. Fix one of them and tag again.`);
+          }
+
+          // Only a tag makes a release, so only a tag needs its notes; a trial
+          // run from a branch may well come before they are written.
+          if (tagged) {
+            try {
+              readNotes(version);
+            } catch (error) {
+              fail(`${error.message} See release-notes/README.md.`);
+            }
+          }
+
+          // A version with a suffix — v0.1.0-beta.1 — is not the finished thing.
+          const prerelease = version.includes('-');
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nprerelease=${prerelease}\n`);
+          console.log(`UwUSweep ${version}, pre-release: ${prerelease}, release: ${tagged}`);
+          EOF
+
+  check:
+    name: Check (${{ matrix.os }})
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # WebKitGTK and the GTK stack Tauri compiles against; nothing else.
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libssl-dev pkg-config
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # tauri-build wants every app's frontendDist to exist.
+      - run: pnpm -r build
+
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked --no-fail-fast
+
+  installers:
+    name: Setup (${{ matrix.name }})
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+            target: ''
+            arch: x64
+          # Natively on ARM: nothing has to be cross-linked.
+          - name: windows-arm64
+            os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            rust-targets: aarch64-pc-windows-msvc
+            arch: arm64
+          # One disk image for Intel and Apple silicon: both built on Apple
+          # silicon (the runner images for Intel Macs come and go) and joined.
+          - name: macos-universal
+            os: macos-latest
+            target: universal-apple-darwin
+            rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+            arch: universal
+          # The oldest supported Ubuntu, so the packages and the portable
+          # folder run on anything as new or newer.
+          - name: linux-x64
+            os: ubuntu-22.04
+            target: ''
+            arch: x64
+          # Natively on ARM, same Ubuntu: nothing has to be cross-linked.
+          - name: linux-arm64
+            os: ubuntu-22.04-arm
+            target: ''
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # WebKitGTK for the app, and what the AppImage bundler runs. The arm64
+          # runner is native, so the same packages.
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libssl-dev pkg-config \
+            patchelf file libfuse2 xdg-utils
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.rust-targets }}
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: ${{ matrix.name }}
+
+      - name: Build the setup
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          if [ -n "$TARGET" ]; then
+            node scripts/build-setup.mjs --target "$TARGET"
+          else
+            node scripts/build-setup.mjs
+          fi
+          ls -la target/installers
+
+      # The setup unpacks what it carries into a scratch folder and checks the
+      # program arrived — the part of an install
+      # no window is needed for. Release builds have no console on Windows,
+      # so the exit code and the files it left behind are what count there.
+      # Both programs are checked for being built for the right processor:
+      # an x64 setup runs on ARM too, emulated, and would hide a wrong build.
+      - name: Check what the setup carries (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -e
+          setup="target/installers/UwUSweep-windows-$ARCH-setup.exe"
+          check="$RUNNER_TEMP/payload-check"
+          "./$setup" --check-payload "$check"
+          node - "$ARCH" "$setup" "$check" <<'EOF'
+          const { readFileSync } = require('node:fs');
+          const { join } = require('node:path');
+          const [arch, setup, check] = process.argv.slice(2);
+          const MACHINE = { x64: 0x8664, arm64: 0xaa64 };
+          const fail = (message) => {
+            console.log(`::error::${message}`);
+            process.exit(1);
+          };
+          for (const file of [setup, join(check, 'UwUSweep.exe')]) {
+            const bytes = readFileSync(file);
+            const pe = bytes.readUInt32LE(0x3c);
+            if (bytes.toString('latin1', pe, pe + 4) !== 'PE\0\0') fail(`${file} is no Windows program.`);
+            const machine = bytes.readUInt16LE(pe + 4);
+            if (machine !== MACHINE[arch]) fail(`${file} is built for machine 0x${machine.toString(16)}, not ${arch}.`);
+            console.log(`${file}: ${arch}`);
+          }
+          EOF
+
+      # The disk image as people get it: mounted, and the setup inside it run.
+      # The universal setup runs as arm64 here; its Intel half is checked for
+      # being there.
+      - name: Check what the setup carries (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -e
+          mount="$RUNNER_TEMP/dmg"
+          check="$RUNNER_TEMP/payload-check"
+          mkdir -p "$mount"
+          hdiutil attach -nobrowse -readonly -mountpoint "$mount" target/installers/UwUSweep-macos-universal.dmg
+          for setup_app in "$mount"/*.app; do
+            codesign --verify --deep --strict "$setup_app"
+            setup=$(ls -d "$setup_app"/Contents/MacOS/* | head -n 1)
+            lipo "$setup" -verify_arch arm64 x86_64
+            "$setup" --check-payload "$check"
+          done
+          for app in "$check"/*.app; do
+            codesign --verify --deep --strict "$app"
+            lipo "$app"/Contents/MacOS/* -verify_arch arm64 x86_64
+            # Info.plist merged: macOS shows its own dialogs in German too.
+            plutil -extract CFBundleLocalizations json -o - "$app/Contents/Info.plist" | grep -q '"de"'
+            echo "signed, universal, localized: $app"
+          done
+          hdiutil detach "$mount"
+
+      # Linux ships no setup: the .deb installs through dpkg as package
+      # `uwusweep` (what the AUR package repacks), the .rpm is named the
+      # same, and the portable folder has everything it needs next to it.
+      # No display here, so no start.
+      - name: Check the Linux packages
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -e
+          arch="$ARCH"
+          sudo apt-get install -y --no-install-recommends "./target/installers/UwUSweep-linux-$arch.deb"
+          test -f /var/lib/dpkg/info/uwusweep.list
+          grep -qx /usr/bin/uwusweep-desktop /var/lib/dpkg/info/uwusweep.list
+          grep -q '^Name=UwUSweep$' /usr/share/applications/uwusweep.desktop
+          ldd /usr/bin/uwusweep-desktop | grep "not found" && exit 1 || echo "every library found"
+          sudo apt-get remove -y uwusweep
+          test ! -e /usr/bin/uwusweep-desktop
+
+          sudo apt-get install -y rpm
+          rpm_file="target/installers/UwUSweep-linux-$arch.rpm"
+          test "$(rpm -qp --queryformat '%{NAME}' "$rpm_file")" = uwusweep
+          rpm -qpl "$rpm_file" | grep -qx /usr/bin/uwusweep-desktop
+
+          portable="$RUNNER_TEMP/portable"
+          mkdir -p "$portable"
+          tar -xzf "target/installers/UwUSweep-linux-$arch-portable.tar.gz" -C "$portable"
+          test "$(ls "$portable")" = UwUSweep
+          test -x "$portable/UwUSweep/uwusweep" && test -x "$portable/UwUSweep/AppRun"
+          test -f "$portable/UwUSweep/README.txt"
+          LD_LIBRARY_PATH="$portable/UwUSweep/usr/lib" ldd "$portable/UwUSweep/usr/bin/uwusweep-desktop" \
+            | grep "not found" && exit 1 || echo "every library found"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: installers-${{ matrix.name }}
+          path: target/installers/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Draft release
+    needs: [version, installers]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      # Creating the release is the only thing in this workflow that writes
+      # anything, and this job builds and installs nothing: it collects what
+      # the others made.
+      contents: write
+    steps:
+      # For the release notes and scripts/release-body.mjs, Node's own
+      # modules only.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: installers-*
+          path: dist
+          merge-multiple: true
+
+      # Exactly the files the release page and README.md name: a build
+      # that went missing, or one under a name nobody links to, stops here.
+      - name: Check every file is there
+        run: |
+          node --input-type=module <<'EOF'
+          import { readdirSync } from 'node:fs';
+          import { RELEASE_FILES } from './scripts/release-body.mjs';
+          const found = readdirSync('dist').sort();
+          const expected = [...RELEASE_FILES].sort();
+          const missing = expected.filter((name) => !found.includes(name));
+          const extra = found.filter((name) => !expected.includes(name));
+          if (missing.length || extra.length) {
+            console.log(`::error::Missing: ${missing.join(', ') || 'nothing'}. Unexpected: ${extra.join(', ') || 'nothing'}.`);
+            process.exit(1);
+          }
+          console.log(`All ${found.length} files are there.`);
+          EOF
+
+      # Nothing is code-signed, so for a person downloading an installer by
+      # hand a checksum is the thing to check it against. It proves nothing
+      # on its own — the same workflow publishes it — but it makes a file that
+      # was swapped afterwards, on a download site or in a forwarded message,
+      # noticeable. The AUR package takes its checksums from here too.
+      # sha256sum writes LF, which is what `sha256sum -c` reads.
+      - name: Write the checksums
+        run: |
+          (cd dist && sha256sum -- *) > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      # Arch Linux: uwusweep-bin's PKGBUILD for this release, with the hashes
+      # above, for `makepkg -si` until the AUR has it (aur.yml).
+      - name: Write the PKGBUILD
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: node scripts/aur.mjs "$VERSION" --sums SHA256SUMS.txt --out "$RUNNER_TEMP/aur"
+
+      # A draft: nobody sees it until it is published by hand, and publishing
+      # is what starts aur.yml. `gh` rather than a release action: one fewer
+      # third-party action in the one job that can write. The token stays in
+      # the environment, never in the command line.
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.version.outputs.version }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/release-body.md"
+          node scripts/release-body.mjs "$VERSION" --out "$body"
+          flags=(--draft --verify-tag)
+          if [ "$PRERELEASE" = true ]; then
+            flags+=(--prerelease)
+          fi
+          # A re-run after the draft exists fails here: delete the draft first.
+          gh release create "$TAG" dist/* SHA256SUMS.txt "$RUNNER_TEMP/aur/PKGBUILD" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "UwUSweep $VERSION" \
+            --notes-file "$body" \
+            "${flags[@]}"
+          echo "::notice::Draft release for $TAG created. Look it over and publish it on GitHub."

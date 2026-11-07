@@ -1,0 +1,20 @@
+{
+  "Aufzeichnung „{name}“ gelöscht.": "Trace “{name}” deleted.",
+  "Ich merke mir, was eine Installation alles anlegt. Später finde ich so jeden Rest.": "I note down everything an install creates. That way I’ll find every leftover later.",
+  "Starte die Aufzeichnung, installiere dann das Programm und klick auf „Fertig“.": "Start the trace, then install the program and click “Done”.",
+  "Aufzeichnung starten": "Start trace",
+  "Ich mache einen Schnappschuss … das dauert einen Moment.": "Taking a snapshot … this takes a moment.",
+  "Ich vergleiche mit vorher …": "Comparing with before …",
+  "Läuft – installiere jetzt das Programm.": "Running – install the program now.",
+  "Installer auswählen …": "Choose installer …",
+  "Name der Aufzeichnung": "Trace name",
+  "Leer lassen, dann nehme ich den Namen des neuen Programms.": "Leave it empty and I’ll use the new program’s name.",
+  "„{name}“ gespeichert: {count} neue Sachen, {apps} neue Programme, {size}.": "“{name}” saved: {count} new things, {apps} new programs, {size}.",
+  "Gespeicherte Aufzeichnungen": "Saved traces",
+  "Noch keine Aufzeichnungen": "No traces yet",
+  "Schreib bei der nächsten Installation mit, dann steht sie hier.": "Trace your next install and it shows up here.",
+  "{files} Dateien, {keys} Registry-Einträge": "{files} files, {keys} registry entries",
+  "Weniger": "Less",
+  "Details": "Details",
+  "Löschen": "Delete"
+}

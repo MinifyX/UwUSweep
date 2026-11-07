@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=System;Utility;
+{{#if comment}}
+Comment={{comment}}
+{{/if}}
+Exec={{exec}}
+Keywords=Uninstall;Uninstaller;Remove;Leftovers;Cleanup;Autostart;Deinstallieren;Reste;
+StartupWMClass={{exec}}
+Icon={{icon}}
+Name=UwUSweep
+Terminal=false
+Type=Application

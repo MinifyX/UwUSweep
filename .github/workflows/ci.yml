@@ -1,0 +1,123 @@
+name: CI
+
+# On every push to main and every pull request, so nothing lands untested
+# between two releases: Prettier and the locale check, the type check, the
+# front-end tests and builds once; rustfmt, clippy and every Rust test on
+# Linux; and the core's tests on Windows and macOS, where its platform modules
+# (registry, AppX, bundles, launch agents) actually compile and run. The whole
+# workspace on Windows and macOS is built by `installers.yml` for every tag
+# and every `ci/**` branch.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'release-notes/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'release-notes/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+  CARGO_TERM_COLOR: always
+
+jobs:
+  web:
+    name: Front end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Every `uses:` is pinned to a commit, with the version in the comment: a
+      # tag can be moved, and `@stable` is a branch.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm -r build
+
+  rust:
+    name: Rust (Linux)
+    runs-on: ubuntu-22.04
+    # A hung runner fails instead of holding everything for six hours.
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      # WebKitGTK and the GTK stack Tauri compiles against; nothing else.
+      - name: Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev libssl-dev pkg-config
+
+      # tauri-build refuses to compile an app whose frontendDist (../dist) is
+      # missing, but a debug build embeds nothing from it: an empty page each
+      # instead of Node, pnpm and two front-end builds, which `web` does.
+      - name: Front-end placeholders
+        run: |
+          for app in desktop setup; do
+            mkdir -p "apps/$app/dist"
+            echo '<!doctype html>' > "apps/$app/dist/index.html"
+          done
+
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          # Pull requests read main's cache; only main writes one, so branch
+          # caches don't push main's out of the 10 GB.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked --no-fail-fast
+
+  core:
+    name: Core (${{ matrix.os }})
+    # Only uwusweep-core: no WebView, no front end, so a few minutes each. The
+    # Linux job above already covers it there.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+          components: clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - run: cargo clippy -p uwusweep-core --all-targets --locked -- -D warnings
+      - run: cargo test -p uwusweep-core --locked --no-fail-fast

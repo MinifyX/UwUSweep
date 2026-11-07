@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="UwUSweep: Nyu as a dustpan with cat ears, and a broom sweeping dust into her">
+  <title>UwUSweep</title>
+  <!--
+    16 and 24 px cut of uwusweep-taskbar-icon.svg: thicker outlines, the
+    scoop as a flat shape, no face, lip, grip line or inner ears, the broom
+    without bristle lines.
+  -->
+  <g transform="translate(212 272) scale(1.5) translate(-128 -142)">
+    <g stroke-linecap="round" stroke-linejoin="round">
+    <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="24"><path d="M62 96 L80 36 L114 84 Z"/><path d="M142 84 L176 36 L194 96 Z"/><rect x="116" y="26" width="24" height="64" rx="12"/><path d="M58 84 H198 Q214 84 216 100 L230 204 Q232 222 214 222 H42 Q24 222 26 204 L40 100 Q42 84 58 84 Z"/></g>
+    <g fill="#FF6FA6" stroke="#4B1D3F" stroke-width="18"><path d="M62 96 L80 36 L114 84 Z"/><path d="M142 84 L176 36 L194 96 Z"/><rect x="116" y="26" width="24" height="64" rx="12"/></g>
+    
+    <path d="M58 84 H198 Q214 84 216 100 L230 204 Q232 222 214 222 H42 Q24 222 26 204 L40 100 Q42 84 58 84 Z" fill="#FF6FA6" stroke="#4B1D3F" stroke-width="18"/>
+    <path d="M70 110 H186 L198 192 H58 Z" fill="#FFB8D3"/>
+  </g>
+  </g>
+  <g transform="translate(424 330) rotate(12) scale(1.1)"><g stroke-linecap="round" stroke-linejoin="round">
+    <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="34"><rect x="-9" y="-250" width="18" height="254" rx="9"/><path d="M-34 14 H34 L60 118 Q0 132 -60 118 Z"/><rect x="-32" y="-8" width="64" height="26" rx="9"/></g>
+    <g fill="#E3AE6F" stroke="#4B1D3F" stroke-width="20"><rect x="-9" y="-250" width="18" height="254" rx="9"/></g>
+    <path d="M-34 14 H34 L60 118 Q0 132 -60 118 Z" fill="#F2C58F" stroke="#4B1D3F" stroke-width="20"/>
+    
+    <rect x="-32" y="-8" width="64" height="26" rx="9" fill="#FF6FA6" stroke="#4B1D3F" stroke-width="20"/>
+  </g></g>
+</svg>

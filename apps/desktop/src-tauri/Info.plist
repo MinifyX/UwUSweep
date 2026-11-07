@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Merged by the Tauri CLI into the app's generated Info.plist.
+
+  UwUSweep needs no usage descriptions: it reads app bundles and the user's
+  Library itself, and asks for an administrator through macOS's own password
+  prompt only when an uninstall or a cleanup needs one. The localizations tell
+  macOS that the app speaks German too, so system dialogs follow suit.
+-->
+<plist version="1.0">
+<dict>
+  <key>CFBundleLocalizations</key>
+  <array>
+    <string>en</string>
+    <string>de</string>
+  </array>
+</dict>
+</plist>

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "UwUSweep",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 640,
+        "minHeight": 440,
+        "center": true,
+        "decorations": true,
+        "titleBarStyle": "Visible",
+        "shadow": true,
+        "resizable": true
+      }
+    ]
+  },
+  "bundle": {
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    }
+  }
+}

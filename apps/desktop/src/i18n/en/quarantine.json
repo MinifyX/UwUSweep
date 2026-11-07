@@ -1,0 +1,15 @@
+{
+  "{count} Sachen konnte ich nicht zurücklegen.": "I couldn’t put {count} things back.",
+  "{name} ist wieder da.": "{name} is back.",
+  "Endgültig gelöscht.": "Deleted for good.",
+  "Hier wartet alles, was ich weggeräumt habe, {days} Tage lang.": "Everything I tidied away waits here for {days} days.",
+  "Die Quarantäne ist leer": "The quarantine is empty",
+  "Wenn du Reste wegräumst, landen sie erst mal hier.": "When you tidy away leftovers, they land here first.",
+  "{count} Sachen": "{count} things",
+  "läuft ab in {days} Tagen": "expires in {days} days",
+  "Wiederherstellen": "Restore",
+  "Endgültig löschen": "Delete for good",
+  "Endgültig löschen?": "Delete for good?",
+  "Behalten": "Keep",
+  "Die Reste von {name} sind dann für immer weg. Das lässt sich nicht rückgängig machen.": "The leftovers of {name} will be gone forever. This can’t be undone."
+}

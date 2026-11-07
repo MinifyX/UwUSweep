@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Nyu, the UwUSweep dustpan cat">
+  <title>Nyu (mono)</title>
+  <!-- One colour, outlines only: ears, grip, pan, scoop as the face and the front lip. -->
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke-width="9">
+      <path d="M69 73 L80 36 L97 60"/>
+      <path d="M159 60 L176 36 L187 73"/>
+      <path d="M116 84 V38 A12 12 0 0 1 128 26 A12 12 0 0 1 140 38 V84"/>
+      <path d="M58 84 H198 Q214 84 216 100 L230 204 Q232 222 214 222 H42 Q24 222 26 204 L40 100 Q42 84 58 84 Z"/>
+    </g>
+    <path d="M74 106 H182 Q192 106 193 116 L202 184 Q203 194 193 194 H63 Q53 194 54 184 L63 116 Q64 106 74 106 Z" stroke-width="7"/>
+    <path d="M34 208 H222" stroke-width="6"/>
+    <g stroke-width="8">
+      <path d="M88 142 Q102 160 116 142"/>
+      <path d="M140 142 Q154 160 168 142"/>
+      <path d="M112 170 q8 13 16 0 q8 13 16 0"/>
+    </g>
+  </g>
+</svg>

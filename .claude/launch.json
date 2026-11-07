@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "uwusweep-setup-ui",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@uwusweep/setup", "dev"],
+      "port": 1430
+    },
+    {
+      "name": "uwusweep-desktop-ui",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@uwusweep/desktop", "dev"],
+      "port": 1420
+    }
+  ]
+}

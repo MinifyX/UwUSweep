@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Nyu, the UwUSweep dustpan cat">
+  <title>Nyu</title>
+  <!--
+    Nyu's hull for UwUSweep: a dustpan. The wide pan is her body, the scoop
+    inside it is her face (eyes, mouth and blush where they sit in every other
+    app, so every mood fits), the front lip is the line along the bottom and
+    the short grip sticks out between her ears.
+  -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="20"><path d="M62 96 L80 36 L114 84 Z"/><path d="M142 84 L176 36 L194 96 Z"/><rect x="116" y="26" width="24" height="64" rx="12"/><path d="M58 84 H198 Q214 84 216 100 L230 204 Q232 222 214 222 H42 Q24 222 26 204 L40 100 Q42 84 58 84 Z"/></g>
+    <g fill="#FF6FA6" stroke="#4B1D3F" stroke-width="9"><path d="M62 96 L80 36 L114 84 Z"/><path d="M142 84 L176 36 L194 96 Z"/><rect x="116" y="26" width="24" height="64" rx="12"/></g>
+    <g fill="#FFB8D3"><path d="M76 86 L84 54 L100 80 Z"/><path d="M156 80 L172 54 L180 86 Z"/></g>
+    <path d="M116 46 H140" fill="none" stroke="#4B1D3F" stroke-width="6"/>
+    <path d="M58 84 H198 Q214 84 216 100 L230 204 Q232 222 214 222 H42 Q24 222 26 204 L40 100 Q42 84 58 84 Z" fill="#FF6FA6" stroke="#4B1D3F" stroke-width="9"/>
+    <path d="M74 106 H182 Q192 106 193 116 L202 184 Q203 194 193 194 H63 Q53 194 54 184 L63 116 Q64 106 74 106 Z" fill="#FFB8D3" stroke="#4B1D3F" stroke-width="7"/>
+    <path d="M34 208 H222" fill="none" stroke="#4B1D3F" stroke-width="6"/>
+    <path d="M72 132 Q74 118 86 114" fill="none" stroke="#FFFFFF" stroke-width="6" opacity="0.85"/>
+    <g fill="#FF4D8D" opacity="0.5"><ellipse cx="74" cy="168" rx="12" ry="7.5"/><ellipse cx="182" cy="168" rx="12" ry="7.5"/></g>
+    <g fill="none" stroke="#4B1D3F" stroke-width="8">
+      <path d="M88 142 Q102 160 116 142"/>
+      <path d="M140 142 Q154 160 168 142"/>
+      <path d="M112 170 q8 13 16 0 q8 13 16 0"/>
+    </g>
+  </g>
+</svg>

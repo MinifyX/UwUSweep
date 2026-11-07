@@ -1,0 +1,35 @@
+# Maintainer: MinifyX <https://github.com/MinifyX>
+#
+# Written by scripts/aur.mjs from packaging/aur/uwusweep-bin/PKGBUILD.in in
+# https://github.com/MinifyX/UwUSweep for each release; edit the template
+# there, not this file. It repacks the release's .deb, like other Tauri -bin
+# packages. UwUSweep doesn't update itself: pacman does.
+
+pkgname=uwusweep-bin
+_pkgname=uwusweep
+pkgver=@PKGVER@
+_version=@VERSION@
+pkgrel=1
+pkgdesc='Uninstall programs and sweep up what they leave behind'
+arch=('x86_64' 'aarch64')
+url='https://github.com/MinifyX/UwUSweep'
+license=('GPL-3.0-only')
+depends=('webkit2gtk-4.1' 'gtk3')
+# Found at runtime; without it UwUSweep still starts, and says so when an
+# uninstall needs root.
+optdepends=(
+  'polkit: pkexec, to uninstall system packages and clean up system folders'
+)
+provides=("$_pkgname")
+conflicts=("$_pkgname")
+options=('!strip' '!debug')
+source_x86_64=("$pkgname-$pkgver-x86_64.deb::$url/releases/download/v$_version/UwUSweep-linux-x64.deb")
+source_aarch64=("$pkgname-$pkgver-aarch64.deb::$url/releases/download/v$_version/UwUSweep-linux-arm64.deb")
+sha256sums_x86_64=('@SHA256_X86_64@')
+sha256sums_aarch64=('@SHA256_AARCH64@')
+
+package() {
+  # makepkg has unpacked the .deb; the files are in its data archive.
+  bsdtar -xf data.tar.* -C "$pkgdir"
+  chmod -R u=rwX,go=rX "$pkgdir/usr"
+}

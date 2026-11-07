@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+
+# Vite's bundler. esbuild's install script links the platform binary, and pnpm
+# refuses to run any dependency's build script until it is named here — with
+# `--frozen-lockfile` it refuses by failing, so CI cannot install without it.
+onlyBuiltDependencies:
+  - esbuild
