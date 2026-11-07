@@ -590,6 +590,8 @@ mod tests {
         }
     }
 
+    // Unix paths: on Windows `/opt/…` is not absolute and so always protected.
+    #[cfg(unix)]
     #[test]
     fn tidy_dedups_and_drops_children() {
         let out = tidy(vec![
