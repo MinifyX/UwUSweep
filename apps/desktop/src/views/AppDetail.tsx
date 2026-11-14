@@ -1,6 +1,6 @@
 /** One program up close, with the two things to do with it. */
 
-import { Avatar, avatarColor, Button, Card, Hint, ICONS } from '@uwusuite/design';
+import { Avatar, Button, Card, Hint, ICONS } from '@uwusuite/design';
 import { formatBytes, formatDate, type App } from '../lib/api';
 import { t } from '../lib/i18n';
 import { AppTags, sourceLabel } from './common';
@@ -30,7 +30,7 @@ export function AppDetail({
         {t('Alle Programme')}
       </Button>
       <div className="mt-4 flex items-center gap-4">
-        <Avatar name={app.name} color={avatarColor(app.name)} size="lg" />
+        <Avatar name={app.name} size="lg" />
         <div className="min-w-0">
           <h1 id="detail-title" className="text-title font-bold break-words">
             {app.name}

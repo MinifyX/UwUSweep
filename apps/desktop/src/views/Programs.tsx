@@ -2,7 +2,6 @@
 
 import {
   Avatar,
-  avatarColor,
   Button,
   EmptyState,
   Hint,
@@ -168,7 +167,7 @@ export function Programs({
                   'hover:bg-elevated focus-visible:shadow-focus focus-visible:outline-none',
                 )}
               >
-                <Avatar name={app.name} color={avatarColor(app.name)} />
+                <Avatar name={app.name} />
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{app.name}</span>
                   <span className="block truncate text-meta text-muted">

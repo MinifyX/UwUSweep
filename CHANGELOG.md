@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.2
+
+- Bewegung: Das Fenster öffnet sich mit einem Kreis aus dem Logo, die Markierung
+  in der Seitenleiste gleitet zur gewählten Ansicht und Ansichten blenden sanft ein.
+  Mit reduzierter Bewegung bleibt alles still.
+- UwUSuite-Design 1.15.2.
+
 ## 0.1.0-beta.1
 
 Erste Beta.

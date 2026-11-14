@@ -4193,7 +4193,7 @@ dependencies = [
 
 [[package]]
 name = "uwusweep-core"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 dependencies = [
  "libc",
  "plist",
@@ -4210,7 +4210,7 @@ dependencies = [
 
 [[package]]
 name = "uwusweep-desktop"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 dependencies = [
  "parking_lot",
  "serde",
@@ -4227,7 +4227,7 @@ dependencies = [
 
 [[package]]
 name = "uwusweep-setup"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 dependencies = [
  "libc",
  "serde",
