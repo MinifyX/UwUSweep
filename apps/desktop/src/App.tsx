@@ -12,6 +12,8 @@ import {
   Icon,
   ICONS,
   matchesAccelerator,
+  NavIndicator,
+  revealFrom,
   TitleBar,
   TitleBarAction,
   Toaster,
@@ -66,6 +68,12 @@ export function App() {
   const [paletteQuery, setPaletteQuery] = useState('');
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  // Once per start: the window is uncovered from the wordmark.
+  useEffect(() => {
+    if (frameRef.current) revealFrom(frameRef.current);
+  }, []);
 
   const loadApps = useCallback(() => {
     setAppsError(null);
@@ -171,11 +179,15 @@ export function App() {
 
   return (
     <UwuLabels labels={lang}>
-      <div className="sweep-frame">
+      <div ref={frameRef} className="sweep-frame">
         <TitleBar
           platform={os}
           controls={controls}
-          brand={<Wordmark product="UwUSweep" shell="box" />}
+          brand={
+            <span data-uwu-reveal-origin>
+              <Wordmark product="UwUSweep" shell="box" />
+            </span>
+          }
           actions={
             <>
               <TitleBarAction
@@ -216,8 +228,9 @@ export function App() {
                 </li>
               ))}
             </ul>
+            <NavIndicator />
           </nav>
-          <main className="sweep-main">
+          <main key={opened ? 'detail' : view} className="sweep-main uwu-page">
             {view === 'programs' &&
               (opened ? (
                 <AppDetail
