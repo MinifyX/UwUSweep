@@ -12,20 +12,20 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/api": "^2.12.5",
     "@uwusuite/design": "https://github.com/MinifyX/UwUSuite-Design/releases/download/v1.15.2/uwusuite-design-1.15.2.tgz",
-    "lucide-react": "^1.52.0",
+    "lucide-react": "^1.75.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "@tauri-apps/cli": "^2.0.0",
+    "@tauri-apps/cli": "^2.12.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.5.4",
-    "vite": "^6.4.5"
+    "vite": "^6.4.6"
   }
 }
